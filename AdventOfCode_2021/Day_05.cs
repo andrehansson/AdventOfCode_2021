@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AoCHelper;
 
@@ -11,162 +8,136 @@ namespace AdventOfCode_2021
 {
 	class Day_05 : BaseDay
 	{
-		struct Line
-		{
-			public Line(int[] p)
-			{
-				StartX = p[0];
-				StartY = p[1];
-				EndX = p[2];
-				EndY = p[3];
-			}
-			public readonly int StartX { get; }
-			public readonly int StartY { get; }
-			public readonly int EndX { get; }
-			public readonly int EndY { get; }
+		private const int START_X = 0;
+		private const int START_Y = 1;
+		private const int END_X = 2;
+		private const int END_Y = 3;
 
-			public override string ToString()
-			{
-				return $"{StartX},{StartY} -> {EndX},{EndY}";
-			}
-		}
-
-		private readonly List<Line> lines;
-		private int[,] map;
-		private int maxX;
-		private int maxY;
+		private readonly int[][] lines;
+		private readonly int[,] map;
+		private readonly int maxX;
+		private readonly int maxY;
 
 		public Day_05()
-		{
-			lines = new();
-			ParseInput();
-		}
-
-		private void ParseInput()
 		{
 			string[] input = File.ReadAllLines(InputFilePath);
 			//string[] input = { "0,9 -> 5,9", "8,0 -> 0,8", "9,4 -> 3,4", "2,2 -> 2,1", "7,0 -> 7,4", "6,4 -> 2,0", "0,9 -> 2,9", "3,4 -> 1,4", "0,0 -> 8,8", "5,5 -> 8,2" };
 
+			lines = new int[input.Length][];
+
 			string[] split = { ",", " -> " };
 
-			maxX = 0;
-			maxY = 0;
-
-			foreach (string str in input)
+			for (int i = 0; i < input.Length; i++)
 			{
-				Line l = new(str.Split(split, StringSplitOptions.None).Select(int.Parse).ToArray());
-				lines.Add(l);
+				lines[i] = input[i].Split(split, StringSplitOptions.None).Select(int.Parse).ToArray();
 
-				maxX = Math.Max(maxX, Math.Max(l.StartX, l.EndX));
-				maxY = Math.Max(maxY, Math.Max(l.StartY, l.EndY));
+				maxX = Math.Max(maxX, Math.Max(lines[i][START_X], lines[i][END_X]));
+				maxY = Math.Max(maxY, Math.Max(lines[i][START_Y], lines[i][END_Y]));
 			}
 
 			map = new int[++maxX, ++maxY];
-
-			// Set all to 0
-			for (int i = 0; i < maxX * maxY; i++) map[i % maxX, i / maxX] = 0;
 		}
 
 		public override ValueTask<string> Solve_1()
 		{
-			foreach (Line line in lines)
+			for (int i = 0; i < lines.Length; i++)
 			{
+				int startX = lines[i][START_X];
+				int startY = lines[i][START_Y];
+				int endX = lines[i][END_X];
+				int endY = lines[i][END_Y];
+
 				// For now, only consider horizontal and vertical lines: lines where either x1 = x2 or y1 = y2.
-				if (line.StartX == line.EndX)
+				if (startX == endX)
 				{
-					if (line.StartY > line.EndY)
+					if (startY > endY)
 					{
-						for (int y = line.StartY; y >= line.EndY; y--) map[line.StartX, y] += 1;
+						for (int y = startY; y >= endY; y--) map[startX, y]++;
 					}
 					else
 					{
-						for (int y = line.StartY; y <= line.EndY; y++) map[line.StartX, y] += 1;
+						for (int y = startY; y <= endY; y++) map[startX, y]++;
 					}
 				}
-				else if (line.StartY == line.EndY)
+				else if (startY == endY)
 				{
-					if (line.StartX > line.EndX)
+					if (startX > endX)
 					{
-						for (int x = line.StartX; x >= line.EndX; x--) map[x, line.StartY] += 1;
+						for (int x = startX; x >= endX; x--) map[x, startY]++;
 					}
 					else
 					{
-						for (int x = line.StartX; x <= line.EndX; x++) map[x, line.StartY] += 1;
-					}
-				}
-			}
-
-			int result = 0;
-
-			for (int i = 0; i < maxX * maxY; i++)
-			{
-				if (map[i % maxX, i / maxX] > 1) result++;
-			}
-
-			return new(result.ToString());
-		}
-
-		public override ValueTask<string> Solve_2()
-		{
-			foreach (Line line in lines)
-			{
-				// Horizontal and vertical is done. Find diagonals.
-				if (Math.Abs(line.StartX - line.EndX) == Math.Abs(line.StartY - line.EndY))
-				{
-					if (line.StartX > line.EndX)
-					{
-						if (line.StartY > line.EndY)
-						{
-							int y = line.StartY;
-							for (int x = line.StartX; x >= line.EndX; x--) map[x, y--] += 1;
-						}
-						else
-						{
-							int y = line.StartY;
-							for (int x = line.StartX; x >= line.EndX; x--) map[x, y++] += 1;
-						}
-					}
-					else
-					{
-
-						if (line.StartY > line.EndY)
-						{
-							int y = line.StartY;
-							for (int x = line.StartX; x <= line.EndX; x++) map[x, y--] += 1;
-						}
-						else
-						{
-							int y = line.StartY;
-							for (int x = line.StartX; x <= line.EndX; x++) map[x, y++] += 1;
-						}
+						for (int x = startX; x <= endX; x++) map[x, startY]++;
 					}
 				}
 			}
 
 			int result = 0;
-
-			for (int i = 0; i < maxX * maxY; i++)
-			{
-				if (map[i % maxX, i / maxX] > 1) result++;
-			}
-
-			return new(result.ToString());
-		}
-
-		private void PrintMap()
-		{
-			StringBuilder sb = new();
 
 			for (int y = 0; y < maxY; y++)
 			{
 				for (int x = 0; x < maxX; x++)
 				{
-					sb.Append($"{map[x, y]} ");
+					if (map[x, y] > 1) result++;
 				}
-				sb.Append(Environment.NewLine);
 			}
 
-			Debug.WriteLine(sb.ToString());
+			return new(result.ToString()); // 7318
 		}
+
+		public override ValueTask<string> Solve_2()
+		{
+			for (int i = 0; i < lines.Length; i++)
+			{
+				int startX = lines[i][START_X];
+				int startY = lines[i][START_Y];
+				int endX = lines[i][END_X];
+				int endY = lines[i][END_Y];
+
+				// Horizontal and vertical is done. Find diagonals.
+				if (Math.Abs(startX - endX) == Math.Abs(startY - endY))
+				{
+					if (startX > endX)
+					{
+						if (startY > endY)
+						{
+							int y = startY;
+							for (int x = startX; x >= endX; x--) map[x, y--]++;
+						}
+						else
+						{
+							int y = startY;
+							for (int x = startX; x >= endX; x--) map[x, y++]++;
+						}
+					}
+					else
+					{
+						if (startY > endY)
+						{
+							int y = startY;
+							for (int x = startX; x <= endX; x++) map[x, y--]++;
+						}
+						else
+						{
+							int y = startY;
+							for (int x = startX; x <= endX; x++) map[x, y++]++;
+						}
+					}
+				}
+			}
+
+			int result = 0;
+
+			for (int y = 0; y < maxY; y++)
+			{
+				for (int x = 0; x < maxX; x++)
+				{
+					if (map[x, y] > 1) result++;
+				}
+			}
+
+			return new(result.ToString()); // 19939
+		}
+
 	}
 }

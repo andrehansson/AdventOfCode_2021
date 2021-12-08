@@ -14,6 +14,7 @@ namespace AdventOfCode_2021
 
             //Solver.SolveLast(solverConfiguration);
             Solver.SolveAll(solverConfiguration);
+            //Solver.Solve(solverConfiguration, 5);
         }
     }
 }
