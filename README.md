@@ -5,7 +5,7 @@ My solutions for [Advent Of Code 2021](https://adventofcode.com/2021) using C#
 \
 Current runtimes:
 \
-![AoC15](https://user-images.githubusercontent.com/3897493/146690847-979af44c-c257-45d0-bdf1-61f70342cf85.PNG)
+![AoC18](https://user-images.githubusercontent.com/3897493/147955502-58d33d1e-2108-41b4-a60d-7161760b66b7.PNG)
 \
 \
 Uses:
